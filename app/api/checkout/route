@@ -1,0 +1,84 @@
+/**
+ * app/api/checkout/route.ts
+ *
+ * POST /api/checkout
+ * Body: { cart, email, customerName, phone, address, city, state }
+ * Returns: { url } — redirect user to this Paystack authorization URL
+ */
+import { NextRequest, NextResponse } from "next/server"
+import { initializePaystackTransaction, generateReference } from "@/lib/paystack"
+import { createOrder } from "@/lib/orders"
+import type { CartItem } from "@/types/Product"
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { cart, email, customerName, phone, address, city, state } = body as {
+      cart: CartItem[]
+      email: string
+      customerName: string
+      phone?: string
+      address: string
+      city: string
+      state: string
+    }
+
+    // ── Validate ──────────────────────────────────────────────────────────
+    if (!cart?.length)     return NextResponse.json({ error: "Cart is empty" }, { status: 400 })
+    if (!email)            return NextResponse.json({ error: "Email required" }, { status: 400 })
+    if (!customerName)     return NextResponse.json({ error: "Name required" }, { status: 400 })
+    if (!address || !city || !state)
+                           return NextResponse.json({ error: "Full address required" }, { status: 400 })
+
+    // ── Calculate total ───────────────────────────────────────────────────
+    const amountNaira = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+    const reference = generateReference()
+
+    // ── Save pending order to Supabase first ──────────────────────────────
+    await createOrder({
+      reference,
+      status: "pending",
+      email,
+      customer_name: customerName,
+      phone,
+      address,
+      city,
+      state,
+      items: cart.map((i) => ({
+        id: i.id,
+        name: i.name,
+        image_url: i.image_url,
+        price: i.price,
+        quantity: i.quantity,
+        selectedSize: i.selectedSize,
+        selectedColor: i.selectedColor,
+      })),
+      amount_naira: amountNaira,
+    })
+
+    // ── Initialize Paystack transaction ───────────────────────────────────
+    const origin = req.headers.get("origin") ?? "http://localhost:3000"
+
+    const transaction = await initializePaystackTransaction({
+      email,
+      amountNaira,
+      reference,
+      callbackUrl: `${origin}/checkout/verify?reference=${reference}`,
+      metadata: {
+        orderId: reference,
+        customerName,
+        items: cart.map((i) => ({
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+        })),
+      },
+    })
+
+    return NextResponse.json({ url: transaction.authorization_url })
+  } catch (err: any) {
+    console.error("[checkout]", err)
+    return NextResponse.json({ error: err.message ?? "Internal error" }, { status: 500 })
+  }
+}

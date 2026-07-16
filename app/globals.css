@@ -1,22 +1,44 @@
 @import "tailwindcss";
 
+/* Tailwind v4 defaults `dark:` to following the OS's prefers-color-scheme.
+   This overrides it to be class-based instead, so next-themes (which adds/
+   removes a `dark` class on <html>) actually controls which styles apply. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/*
+  Brand color override — reskins every existing `orange-*` Tailwind class
+  (bg-orange-500, text-orange-400, border-orange-500/30, etc.) across the
+  whole app to an antique gold, matching the crest in the Hero image.
+  No component files need to change — this works globally because
+  Tailwind v4 resolves `orange-500` etc. from these CSS variables.
+*/
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-orange-50:  #fdf8ec;
+  --color-orange-100: #faf0d0;
+  --color-orange-200: #f3dfa0;
+  --color-orange-300: #ecc766;
+  --color-orange-400: #e0af3f;
+  --color-orange-500: #d4a017; /* primary brand gold */
+  --color-orange-600: #b8860b;
+  --color-orange-700: #966f09;
+  --color-orange-800: #7a5a08;
+  --color-orange-900: #5c4406;
+  --color-orange-950: #3d2d04;
 }
 
 body {
