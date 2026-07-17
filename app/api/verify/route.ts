@@ -6,7 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 import { verifyPaystackTransaction } from "@/lib/paystack"
-import { updateOrderStatus } from "@/lib/orders"
+import { updateOrderStatus } from "@/lib/orders-admin"
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get("reference")
@@ -18,7 +18,9 @@ export async function GET(req: NextRequest) {
     const tx = await verifyPaystackTransaction(reference)
 
     if (tx.status === "success") {
-      await updateOrderStatus(reference, "paid")
+      // DB status must be "completed" — matches the orders_status_check
+      // constraint (pending | completed | failed). "paid" would violate it.
+      await updateOrderStatus(reference, "completed")
       return NextResponse.json({ status: "paid", reference })
     } else {
       await updateOrderStatus(reference, "failed")

@@ -38,7 +38,7 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     let completed = 0, pending = 0, failedOrCancelled = 0, totalSpent = 0
     for (const order of orders) {
-      if (order.status === "paid") {
+      if (order.status === "completed") {
         completed += 1
         totalSpent += order.total
       } else if (order.status === "pending") {

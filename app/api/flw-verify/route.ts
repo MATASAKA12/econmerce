@@ -8,7 +8,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 import { verifyFlutterwaveTransaction } from "@/lib/flutterwave"
-import { updateOrderStatus } from "@/lib/orders"
+import { updateOrderStatus } from "@/lib/orders-admin"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -30,7 +30,13 @@ export async function GET(req: NextRequest) {
     const tx = await verifyFlutterwaveTransaction(transactionId)
 
     if (tx.status === "successful") {
-      await updateOrderStatus(tx.tx_ref, "paid")
+      // DB status must be "completed" — matches the orders_status_check
+      // constraint (pending | completed | failed). "paid" would violate
+      // it and throw. The JSON `status` field returned to the client
+      // below is left as "paid" since I don't know whether your checkout
+      // UI/FlwCheckoutForm checks for that exact string — if it should
+      // say "completed" instead, tell me and I'll align it too.
+      await updateOrderStatus(tx.tx_ref, "completed")
       return NextResponse.json({ status: "paid", tx_ref: tx.tx_ref, amount_naira: tx.amount })
     } else {
       await updateOrderStatus(tx.tx_ref, "failed")

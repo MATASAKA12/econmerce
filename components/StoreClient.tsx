@@ -19,16 +19,13 @@ import type { Product, SortOption, Category } from "@/types/Product"
 
 const CATEGORIES = ["All","Tops","Bottoms","Outerwear","Accessories","Footwear"] as const
 
-// ── Motion variants — shared across the page ─────────────────────────────
 const easeOutExpo = [0.16, 1, 0.3, 1] as const
 
-// Simple fade-up for standalone blocks (headings, banners, CTAs)
 const fadeUp = {
   hidden:  { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOutExpo } },
 }
 
-// Container that staggers its direct motion children as it scrolls into view
 const staggerContainer = {
   hidden:  {},
   visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
@@ -39,7 +36,6 @@ const staggerItem = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOutExpo } },
 }
 
-// Standard viewport config: animate once, trigger slightly before fully on-screen
 const viewportOnce = { once: true, margin: "-80px" }
 
 interface StoreClientProps {
@@ -47,49 +43,37 @@ interface StoreClientProps {
   initialHotProducts: Product[]
 }
 
-// All the interactivity (filters, cart, wishlist, quick view, motion) lives
-// here, same as before — the only real change is that `products` and
-// `hotProducts` arrive as props (already fetched server-side) instead of
-// being fetched in a useEffect after mount.
 export function StoreClient({ initialProducts, initialHotProducts }: StoreClientProps) {
-  // ── Cart from context (persists across pages) ─────────────────────────────
   const { cart, cartCount, cartTotal, addToCart, removeFromCart, updateQty } = useCart()
   const [cartOpen, setCartOpen] = useState(false)
 
-  // ── Wishlist (local — can be moved to Supabase via lib/wishlist.ts) ───────
   const [wishlist, setWishlist] = useState<string[]>([])
   const toggleWishlist = (id: string) =>
     setWishlist((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     )
 
-  // ── Quick view ────────────────────────────────────────────────────────────
   const [quickView, setQuickView] = useState<Product | null>(null)
 
-  // ── Filters ───────────────────────────────────────────────────────────────
   const [activeCategory, setActiveCategory] = useState<Category>("All")
   const [sortBy,         setSortBy]         = useState<SortOption>("featured")
   const [searchQuery,    setSearchQuery]    = useState("")
 
-  // ── Products — server-fetched, passed in as props ──────────────────────────
   const products    = initialProducts
   const hotProducts  = initialHotProducts
 
-  // ── Toast ─────────────────────────────────────────────────────────────────
   const [toast, setToast] = useState("")
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(""), 2500)
   }
 
-  // ── Add to cart with toast ────────────────────────────────────────────────
   const handleAddToCart = (product: Product, size?: string, color?: string) => {
     addToCart(product, size, color)
     showToast(`${product.name} added to bag`)
     setCartOpen(true)
   }
 
-  // ── Derived list ──────────────────────────────────────────────────────────
   const filtered = products
     .filter((p) => activeCategory === "All" || p.category === activeCategory)
     .filter((p) => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -113,7 +97,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
     document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-black dark:text-white font-sans">
 
       {/* Toast */}
       {toast && (
@@ -134,7 +118,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
       <Hero onShopNow={scrollToProducts} />
 
       {/* Features bar */}
-      <div className="border-y border-white/5 bg-[#0d0d0d]">
+      <div className="border-y border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#0d0d0d]">
         <motion.div
           className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 lg:grid-cols-4 gap-6"
           initial="hidden"
@@ -150,7 +134,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
           ].map(({ icon: Icon, title, sub }) => (
             <motion.div key={title} variants={staggerItem} className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Icon size={18} className="text-orange-400" />
+                <Icon size={18} className="text-orange-500 dark:text-orange-400" />
               </div>
               <div>
                 <p className="text-sm font-bold">{title}</p>
@@ -171,7 +155,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
           variants={fadeUp}
         >
           <h2 className="text-2xl font-black tracking-tight">Shop by Category</h2>
-          <a href="#" className="text-blue-400 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
+          <a href="#" className="text-blue-600 dark:text-blue-400 text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
             All categories <ChevronRight size={16} />
           </a>
         </motion.div>
@@ -192,7 +176,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
               className={`py-4 px-2 rounded-2xl text-sm font-bold transition-colors ${
                 activeCategory === cat
                   ? "bg-orange-500 text-white"
-                  : "bg-[#111] text-gray-500 hover:text-white hover:bg-[#1a1a1a] border border-white/5"
+                  : "bg-gray-50 dark:bg-[#111] text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#1a1a1a] border border-gray-200 dark:border-white/5"
               }`}
             >
               {cat}
@@ -201,7 +185,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
         </motion.div>
       </section>
 
-      {/* New Arrivals Banner */}
+      {/* New Arrivals Banner — brand-colored gradient card, reads fine on both themes unchanged */}
       <section id="new-arrivals" className="max-w-7xl mx-auto px-4 mb-16">
         <motion.div
           className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-6 overflow-hidden relative"
@@ -247,7 +231,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-[#111] border border-white/10 text-sm text-gray-300 rounded-full px-4 py-2.5 pr-8 outline-none appearance-none cursor-pointer"
+              className="bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-white/10 text-sm text-gray-700 dark:text-gray-300 rounded-full px-4 py-2.5 pr-8 outline-none appearance-none cursor-pointer"
             >
               <option value="top-sales">Top Sales</option>
               <option value="rating">Top Rated</option>
@@ -267,7 +251,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
               className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 activeCategory === cat
                   ? "bg-orange-500 text-white"
-                  : "bg-[#111] text-gray-500 hover:text-white border border-white/5"
+                  : "bg-gray-50 dark:bg-[#111] text-gray-500 hover:text-black dark:hover:text-white border border-gray-200 dark:border-white/5"
               }`}
             >
               {cat}
@@ -275,8 +259,6 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
           ))}
         </div>
 
-        {/* Product cards reveal individually as they scroll into view, with a
-            light stagger based on grid position so rows don't all pop at once. */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
           {filtered.map((product, i) => (
             <motion.div
@@ -299,10 +281,10 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
 
         {filtered.length === 0 && products.length > 0 && (
           <div className="text-center py-24">
-            <p className="text-gray-600 text-lg">No products found</p>
+            <p className="text-gray-500 dark:text-gray-600 text-lg">No products found</p>
             <button
               onClick={() => { setSearchQuery(""); setActiveCategory("All") }}
-              className="text-orange-400 text-sm mt-2 hover:underline"
+              className="text-orange-500 dark:text-orange-400 text-sm mt-2 hover:underline"
             >
               Clear filters
             </button>
@@ -311,8 +293,8 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
 
         {products.length === 0 && (
           <div className="text-center py-24">
-            <p className="text-gray-600 text-lg">No products yet</p>
-            <p className="text-gray-700 text-sm mt-1">Check back soon or visit the admin to add products.</p>
+            <p className="text-gray-500 dark:text-gray-600 text-lg">No products yet</p>
+            <p className="text-gray-400 dark:text-gray-700 text-sm mt-1">Check back soon or visit the admin to add products.</p>
           </div>
         )}
       </section>
@@ -328,7 +310,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
             variants={fadeUp}
           >
             <h2 className="text-2xl font-black tracking-tight">🔥 Trending Now</h2>
-            <a href="#" className="text-orange-400 text-sm font-medium flex items-center gap-1">
+            <a href="#" className="text-orange-500 dark:text-orange-400 text-sm font-medium flex items-center gap-1">
               See more <ChevronRight size={14} />
             </a>
           </motion.div>
@@ -344,13 +326,13 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
                 key={product.id}
                 variants={staggerItem}
                 whileHover={{ y: -3 }}
-                className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 flex gap-4 p-4 hover:border-orange-500/20 transition-colors cursor-pointer"
+                className="bg-gray-50 dark:bg-[#111] rounded-2xl overflow-hidden border border-gray-200 dark:border-white/5 flex gap-4 p-4 hover:border-orange-500/30 dark:hover:border-orange-500/20 transition-colors cursor-pointer"
                 onClick={() => setQuickView(product)}
               >
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-20 h-20 object-cover rounded-xl flex-shrink-0 bg-[#1a1a1a]"
+                  className="w-20 h-20 object-cover rounded-xl flex-shrink-0 bg-gray-200 dark:bg-[#1a1a1a]"
                 />
                 <div className="min-w-0">
                   <p className="text-xs text-gray-500 mb-1">{product.category}</p>
@@ -359,7 +341,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
                     <Stars rating={product.rating} />
                     <span className="text-xs text-gray-500">({product.reviews})</span>
                   </div>
-                  <p className="text-orange-400 font-bold text-sm">{fmt(product.price)}</p>
+                  <p className="text-orange-500 dark:text-orange-400 font-bold text-sm">{fmt(product.price)}</p>
                 </div>
               </motion.div>
             ))}
@@ -370,7 +352,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
       {/* Instagram CTA */}
       <section className="max-w-7xl mx-auto px-4 pb-24">
         <motion.div
-          className="bg-[#111] rounded-3xl p-8 text-center border border-white/5"
+          className="bg-gray-50 dark:bg-[#111] rounded-3xl p-8 text-center border border-gray-200 dark:border-white/5"
           initial="hidden"
           whileInView="visible"
           viewport={viewportOnce}
@@ -395,7 +377,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
       <Footer />
 
       {/* Mobile bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0d0d0d]/95 backdrop-blur-md border-t border-white/5 lg:hidden z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0d0d0d]/95 backdrop-blur-md border-t border-gray-200 dark:border-white/5 lg:hidden z-40">
         <div className="grid grid-cols-4 h-16">
           {[
             { icon: "🛒", label: "Cart",    action: () => setCartOpen(true), badge: cartCount },
@@ -406,7 +388,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
             <button
               key={label}
               onClick={action}
-              className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-orange-400 transition-colors relative"
+              className="flex flex-col items-center justify-center gap-1 text-gray-500 dark:text-gray-600 hover:text-orange-500 dark:hover:text-orange-400 transition-colors relative"
             >
               <span className="text-lg">{icon}</span>
               <span className="text-[9px] font-medium">{label}</span>
