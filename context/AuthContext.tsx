@@ -11,6 +11,7 @@ export interface User {
   id: string
   email: string
   name: string
+  phone?: string
   created_at?: string
   last_sign_in_at?: string
 }
@@ -44,6 +45,10 @@ async function buildUser(session: Session | null): Promise<User | null> {
                        ?? authUser.user_metadata?.full_name
                        ?? authUser.email?.split("@")[0]
                        ?? "User",
+    // Surfaced from Supabase's user_metadata so pages like account/settings
+    // can read `user.phone` directly, instead of reaching into
+    // user_metadata (and losing type safety) themselves.
+    phone:           authUser.user_metadata?.phone ?? authUser.phone ?? undefined,
     created_at:      authUser.created_at,
     last_sign_in_at: authUser.last_sign_in_at,
   }

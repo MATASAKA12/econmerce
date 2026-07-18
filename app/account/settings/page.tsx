@@ -83,7 +83,7 @@ export default function SettingsPage() {
         setFullName(p.full_name ?? "")
         setAvatarUrl(p.avatar_url)
         // phone isn't in profiles schema — read from user_metadata if set
-        setPhone(user.user_metadata?.phone ?? "")
+        setPhone(user.phone ?? "")
       }
       setProfileLoading(false)
     })
