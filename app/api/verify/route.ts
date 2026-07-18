@@ -6,7 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 import { verifyPaystackTransaction } from "@/lib/paystack"
-import { updateOrderStatus } from "@/lib/orders-Admin"
+import { updateOrderStatus } from "@/lib/orders-admin"
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get("reference")
