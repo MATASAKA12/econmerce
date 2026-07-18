@@ -8,15 +8,18 @@ import {
   Copy, Check, Loader2, ShoppingBag,
 } from "lucide-react"
 import { fmt } from "@/lib/Utils"
-import type { Order, OrderItem } from "@/types/order"
+// Using the single authoritative type from lib/orders.ts (status: string,
+// matching the real DB column) instead of a separate @/types/order file
+// with a stricter status union — that mismatch was the build error.
+import type { OrderRow as Order, OrderItem } from "@/lib/orders"
 
 const STATUS_STYLES: Record<string, string> = {
-  paid:        "bg-green-500/20 text-green-400 border-green-500/30",
-  completed:   "bg-green-500/20 text-green-400 border-green-500/30",
-  pending:     "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  processing:  "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  failed:      "bg-red-500/20 text-red-400 border-red-500/30",
-  cancelled:   "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  paid:        "bg-green-500/20 text-green-500 dark:text-green-400 border-green-500/30",
+  completed:   "bg-green-500/20 text-green-500 dark:text-green-400 border-green-500/30",
+  pending:     "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30",
+  processing:  "bg-blue-500/20 text-blue-500 dark:text-blue-400 border-blue-500/30",
+  failed:      "bg-red-500/20 text-red-500 dark:text-red-400 border-red-500/30",
+  cancelled:   "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30",
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -70,22 +73,22 @@ export default function OrdersPage() {
   // ── Render ────────────────────────────────────────────────────────────────
   if (!user && !loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-black dark:text-white flex items-center justify-center">
         <div className="text-center">
-          <Package size={48} className="text-gray-700 mx-auto mb-4" />
+          <Package size={48} className="text-gray-400 dark:text-gray-700 mx-auto mb-4" />
           <h2 className="text-xl font-black mb-2">Sign in to view orders</h2>
-          <a href="/account/login" className="text-orange-400 hover:underline text-sm">Go to login</a>
+          <a href="/account/login" className="text-orange-500 dark:text-orange-400 hover:underline text-sm">Go to login</a>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-black dark:text-white">
 
       {/* Header */}
-      <div className="border-b border-white/5 bg-[#0d0d0d] px-6 py-4 flex items-center gap-4">
-        <a href="/" className="text-gray-400 hover:text-white transition-colors">
+      <div className="border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#0d0d0d] px-6 py-4 flex items-center gap-4">
+        <a href="/" className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
           <ArrowLeft size={20} />
         </a>
         <div>
@@ -109,7 +112,7 @@ export default function OrdersPage() {
         {!loading && orders.length === 0 && (
           <div className="text-center py-24">
             <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingBag size={32} className="text-orange-400" />
+              <ShoppingBag size={32} className="text-orange-500 dark:text-orange-400" />
             </div>
             <h2 className="text-xl font-black mb-2">No orders yet</h2>
             <p className="text-gray-500 text-sm mb-8">Your orders will appear here after you make a purchase</p>
@@ -131,10 +134,10 @@ export default function OrdersPage() {
                 { label: "Total Spent",  value: fmt(totalSpent), sub: "All purchases" },
                 { label: "Completed",    value: completedCount, sub: `${orders.length - completedCount} in progress` },
               ].map(({ label, value, sub }) => (
-                <div key={label} className="bg-[#111] rounded-2xl p-5 border border-white/5">
+                <div key={label} className="bg-gray-50 dark:bg-[#111] rounded-2xl p-5 border border-gray-200 dark:border-white/5">
                   <p className="text-xs text-gray-500 mb-1">{label}</p>
-                  <p className="text-2xl font-black text-white">{value}</p>
-                  <p className="text-xs text-gray-600 mt-1">{sub}</p>
+                  <p className="text-2xl font-black text-black dark:text-white">{value}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">{sub}</p>
                 </div>
               ))}
             </div>
@@ -148,7 +151,7 @@ export default function OrdersPage() {
                   className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                     activeTab === key
                       ? "bg-orange-500 border-orange-500 text-white"
-                      : "bg-[#111] border-white/10 text-gray-500 hover:text-white"
+                      : "bg-gray-50 dark:bg-[#111] border-gray-200 dark:border-white/10 text-gray-500 hover:text-black dark:hover:text-white"
                   }`}
                 >
                   {label} ({count})
@@ -167,7 +170,7 @@ export default function OrdersPage() {
                 />
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-gray-600 py-12">No orders in this category.</p>
+                <p className="text-center text-gray-500 dark:text-gray-600 py-12">No orders in this category.</p>
               )}
             </div>
           </>
@@ -204,7 +207,7 @@ function OrderCard({
   const timeStr = date.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" })
 
   return (
-    <div className="bg-[#111] rounded-2xl border border-white/5 overflow-hidden">
+    <div className="bg-gray-50 dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-white/5 overflow-hidden">
 
       {/* Top row */}
       <div className="p-5">
@@ -212,10 +215,10 @@ function OrderCard({
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs text-gray-500 font-mono">
-                Order ID: <span className="text-white font-bold">{order.reference ?? order.id.slice(0, 12).toUpperCase()}</span>
+                Order ID: <span className="text-black dark:text-white font-bold">{order.reference ?? order.id.slice(0, 12).toUpperCase()}</span>
               </span>
-              <button onClick={copyRef} className="text-gray-600 hover:text-orange-400 transition-colors">
-                {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+              <button onClick={copyRef} className="text-gray-400 dark:text-gray-600 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
+                {copied ? <Check size={12} className="text-green-500 dark:text-green-400" /> : <Copy size={12} />}
               </button>
             </div>
             <div className="flex items-center gap-3 text-xs text-gray-500">
@@ -236,23 +239,23 @@ function OrderCard({
                 key={i}
                 src={item.image_url}
                 alt={item.name}
-                className="w-10 h-10 rounded-lg object-cover border-2 border-[#111]"
+                className="w-10 h-10 rounded-lg object-cover border-2 border-gray-50 dark:border-[#111]"
               />
             ))}
             {items.length > 3 && (
-              <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border-2 border-[#111] flex items-center justify-center text-xs text-gray-500 font-bold">
+              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-[#1a1a1a] border-2 border-gray-50 dark:border-[#111] flex items-center justify-center text-xs text-gray-500 font-bold">
                 +{items.length - 3}
               </div>
             )}
           </div>
           <span className="text-xs text-gray-500">{items.length} item{items.length !== 1 ? "s" : ""}</span>
-          <span className="ml-auto text-orange-400 font-black">{fmt(displayAmount)}</span>
+          <span className="ml-auto text-orange-500 dark:text-orange-400 font-black">{fmt(displayAmount)}</span>
         </div>
 
         {/* Toggle */}
         <button
           onClick={onToggle}
-          className="flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition-colors mt-3"
+          className="flex items-center gap-1 text-xs text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors mt-3"
         >
           {expanded ? "Hide details" : "View details"}
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -261,7 +264,7 @@ function OrderCard({
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="border-t border-white/5 p-5 space-y-4">
+        <div className="border-t border-gray-200 dark:border-white/5 p-5 space-y-4">
 
           {/* Items breakdown */}
           <div className="space-y-3">
@@ -270,7 +273,7 @@ function OrderCard({
                 <img
                   src={item.image_url}
                   alt={item.name}
-                  className="w-14 h-14 object-cover rounded-xl bg-[#1a1a1a] flex-shrink-0"
+                  className="w-14 h-14 object-cover rounded-xl bg-gray-200 dark:bg-[#1a1a1a] flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm leading-tight truncate">{item.name}</p>
@@ -278,7 +281,7 @@ function OrderCard({
                     Size: {item.selectedSize} · Color: {item.selectedColor} · Qty: {item.quantity}
                   </p>
                 </div>
-                <p className="text-orange-400 font-bold text-sm flex-shrink-0">
+                <p className="text-orange-500 dark:text-orange-400 font-bold text-sm flex-shrink-0">
                   {fmt(item.price * item.quantity)}
                 </p>
               </div>
@@ -287,18 +290,18 @@ function OrderCard({
 
           {/* Delivery address */}
           {order.address && (
-            <div className="bg-[#0d0d0d] rounded-xl p-4 border border-white/5">
+            <div className="bg-white dark:bg-[#0d0d0d] rounded-xl p-4 border border-gray-200 dark:border-white/5">
               <p className="text-xs text-gray-500 font-bold tracking-widest mb-2">DELIVERY ADDRESS</p>
-              <p className="text-sm text-gray-300">{order.customer_name}</p>
-              <p className="text-sm text-gray-400">{order.address}, {order.city}, {order.state}</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{order.customer_name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{order.address}, {order.city}, {order.state}</p>
               {order.phone && <p className="text-sm text-gray-500 mt-1">{order.phone}</p>}
             </div>
           )}
 
           {/* Total */}
-          <div className="flex justify-between items-center pt-2 border-t border-white/5">
+          <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-white/5">
             <span className="text-sm text-gray-500">Order Total</span>
-            <span className="text-orange-400 font-black text-lg">{fmt(displayAmount)}</span>
+            <span className="text-orange-500 dark:text-orange-400 font-black text-lg">{fmt(displayAmount)}</span>
           </div>
         </div>
       )}
