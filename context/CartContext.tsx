@@ -1,10 +1,12 @@
 "use client"
 
 import {
-  createContext, useContext, useState,
+  createContext, useContext, useState, useEffect,
   useCallback, type ReactNode,
 } from "react"
 import type { Product, CartItem } from "@/types/Product"
+
+const CART_STORAGE_KEY = "bodega_cart"
 
 interface CartContextType {
   cart:       CartItem[]
@@ -20,6 +22,35 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
+  // Tracks whether we've finished reading from localStorage yet. Starting
+  // the cart empty and only hydrating after mount matches what the server
+  // rendered (which has no access to localStorage), avoiding a hydration
+  // mismatch — same pattern used elsewhere in this app for client-only data.
+  const [hydrated, setHydrated] = useState(false)
+
+  // Load any previously-saved cart once, on mount.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(CART_STORAGE_KEY)
+      if (stored) setCart(JSON.parse(stored))
+    } catch (err) {
+      console.error("Failed to load cart from storage:", err)
+    } finally {
+      setHydrated(true)
+    }
+  }, [])
+
+  // Persist on every change — but only once initial hydration has
+  // completed, otherwise this would immediately overwrite a saved cart
+  // with an empty array during the brief window before the effect above runs.
+  useEffect(() => {
+    if (!hydrated) return
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
+    } catch (err) {
+      console.error("Failed to save cart to storage:", err)
+    }
+  }, [cart, hydrated])
 
   const addToCart = useCallback((product: Product, size?: string, color?: string) => {
     const s = size  || product.sizes[0]  || ""

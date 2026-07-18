@@ -4,7 +4,7 @@
  */
 import { NextRequest, NextResponse } from "next/server"
 import { initializeFlutterwavePayment, generateReference } from "@/lib/flutterwave"
-import { createOrder } from "@/lib/orders"
+import { createOrder } from "@/lib/orders-admin"
 import { supabase } from "@/lib/supabase"
 import type { CartItem } from "@/types/Product"
 
@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
       cart, email, customerName, phone,
       address, city, state,
       deliveryFee = 5000,
-      orderTotal,
     } = body as {
       cart: CartItem[]
       email: string
@@ -25,7 +24,6 @@ export async function POST(req: NextRequest) {
       city: string
       state: string
       deliveryFee: number
-      orderTotal: number
     }
 
     if (!cart?.length)       return NextResponse.json({ error: "Cart is empty" }, { status: 400 })
@@ -34,7 +32,7 @@ export async function POST(req: NextRequest) {
     if (!address || !city || !state)
                              return NextResponse.json({ error: "Full address required" }, { status: 400 })
 
-    // ── Resolve user_id from Bearer token ─────────────────────────────────
+    // ── Resolve user_id from Bearer token (guest checkout allowed — userId stays null) ──
     const authHeader = req.headers.get("authorization")
     let userId: string | null = null
     if (authHeader?.startsWith("Bearer ")) {
@@ -42,41 +40,30 @@ export async function POST(req: NextRequest) {
       userId = user?.id ?? null
     }
 
-    const subtotal    = cart.reduce((s, i) => s + i.price * i.quantity, 0)
-    const totalAmount = orderTotal ?? (subtotal + deliveryFee)
-    const reference   = generateReference()
-    const origin      = req.headers.get("origin") ?? "http://localhost:3000"
+    const reference = generateReference()
+    const origin     = req.headers.get("origin") ?? "http://localhost:3000"
 
-    // Save pending order to Supabase
-    await createOrder({
+    // Creates the pending order — prices are re-verified against the
+    // products table inside createOrder(), not trusted from `cart` here.
+    // `totalAmount` below comes back from that server-verified calculation,
+    // not from the client-sent orderTotal that used to be trusted directly.
+    const { amount: totalAmount } = await createOrder({
       reference,
-      status:        "pending",
       email,
-      customer_name: customerName,
+      customerName,
       phone,
       address,
       city,
       state,
-      items: cart.map((i) => ({
-        id:            i.id,
-        name:          i.name,
-        image_url:     i.image_url,
-        price:         i.price,
-        quantity:      i.quantity,
-        selectedSize:  i.selectedSize,
-        selectedColor: i.selectedColor,
-      })),
-      amount_naira:              totalAmount,
-      amount:                    totalAmount,   // keep original col in sync
-      user_id:                   userId,
-      flutterwave_tx_ref:        null,
-      flutterwave_transaction_id: null,
+      cart,
+      deliveryFee,
+      userId,
     })
 
-    // Initialize Flutterwave with full amount including delivery
+    // Initialize Flutterwave with the server-verified amount
     const paymentLink = await initializeFlutterwavePayment({
       tx_ref:       reference,
-      amount:       totalAmount,                // ← full amount with delivery
+      amount:       totalAmount,
       currency:     "NGN",
       redirect_url: `${origin}/checkout/flw-verify`,
       customer: { email, name: customerName, phonenumber: phone },

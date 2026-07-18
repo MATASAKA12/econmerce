@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 
   const payload = await req.json().catch(() => null)
-  const txRef = payload?.data?.tx_ref
+  const txRef = payload?.data?.tx_ref   // this IS your `reference` column value
   const transactionId = payload?.data?.id
 
   if (!txRef || !transactionId) {
@@ -42,15 +42,15 @@ export async function POST(req: NextRequest) {
   const verifyJson = await verifyRes.json()
   const tx = verifyJson?.data
 
-  // ── Look up the order this reference belongs to ───────────────────────
+  // ── Look up the order — matches on `reference`, not `flutterwave_tx_ref` ──
   const { data: order, error: orderError } = await supabaseAdmin
     .from("orders")
     .select("*")
-    .eq("flutterwave_tx_ref", txRef)
+    .eq("reference", txRef)
     .single()
 
   if (orderError || !order) {
-    console.error("No matching order for tx_ref:", txRef, orderError)
+    console.error("No matching order for reference:", txRef, orderError)
     return NextResponse.json({ error: "Order not found" }, { status: 404 })
   }
 
@@ -80,7 +80,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true })
   }
 
-  // ── All checks passed ───────────────────────────────────────────────
-  await updateOrderStatus(txRef, "completed")
+  // ── All checks passed — record Flutterwave's own identifiers as
+  // metadata alongside flipping status. ───────────────────────────────────
+  await updateOrderStatus(txRef, "completed", {
+    txRef: tx.flw_ref,
+    transactionId: String(transactionId),
+  })
+
   return NextResponse.json({ received: true })
 }

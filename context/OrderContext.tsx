@@ -7,30 +7,33 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { getUserOrders } from "@/lib/orders"
 import type { OrderRow, OrderItem } from "@/lib/orders"
-import { createPendingOrder, type PendingOrderResult } from "@/app/actions/create-order"
-import type { CartItem } from "@/types/Product"
 
 export type { OrderItem }
 export type OrderStatus = "pending" | "completed" | "failed"
 
+// Includes the extra fields your real schema has (delivery address,
+// contact info, reference) in case order-history UI wants to show them —
+// feel free to trim what you don't need.
 export interface Order {
-  orderId: string
-  date: string
-  timestamp: string
-  status: OrderStatus
-  items: OrderItem[]
-  total: number
+  orderId:        string
+  date:            string
+  timestamp:       string
+  status:          OrderStatus
+  items:           OrderItem[]
+  total:           number
+  reference:       string | null
+  email:           string | null
+  customerName:    string | null
+  phone:           string | null
+  deliveryAddress: string | null
+  city:            string | null
+  state:           string | null
 }
 
 interface OrderContextType {
-  orders:    Order[]
-  isLoading: boolean
-  // Creates a pending order server-side (with server-verified pricing) and
-  // returns what's needed to launch the Flutterwave checkout modal. Status
-  // only ever becomes "completed" or "failed" via server-side verification
-  // (app/api/flw-verify or the webhook) — never set directly from here.
-  createOrder: (cart: CartItem[]) => Promise<PendingOrderResult>
-  getOrder: (orderId: string) => Order | undefined
+  orders:        Order[]
+  isLoading:     boolean
+  getOrder:      (orderId: string) => Order | undefined
   refreshOrders: () => Promise<void>
 }
 
@@ -48,9 +51,19 @@ function mapRowToOrder(row: OrderRow): Order {
     status: (row.status as OrderStatus) ?? "pending",
     total: Number(row.amount),
     items: row.items ?? [],
+    reference:       row.reference,
+    email:           row.email,
+    customerName:    row.customer_name,
+    phone:           row.phone,
+    deliveryAddress: row.address,
+    city:            row.city,
+    state:           row.state,
   }
 }
 
+// Order creation happens entirely through app/api/flw-checkout and
+// app/api/checkout — this context is read-only, reflecting orders already
+// in the database for the signed-in user.
 export function OrderProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [orders, setOrders]       = useState<Order[]>([])
@@ -72,20 +85,13 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     refreshOrders()
   }, [refreshOrders])
 
-  const createOrder = useCallback(async (cart: CartItem[]) => {
-    if (!user) throw new Error("Cannot create an order — no authenticated user.")
-    const result = await createPendingOrder({ userId: user.id, cart })
-    await refreshOrders()
-    return result
-  }, [user, refreshOrders])
-
   const getOrder = useCallback(
     (orderId: string) => orders.find((o) => o.orderId === orderId),
     [orders]
   )
 
   return (
-    <OrderContext.Provider value={{ orders, isLoading, createOrder, getOrder, refreshOrders }}>
+    <OrderContext.Provider value={{ orders, isLoading, getOrder, refreshOrders }}>
       {children}
     </OrderContext.Provider>
   )

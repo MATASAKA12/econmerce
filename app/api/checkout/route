@@ -1,13 +1,7 @@
-/**
- * app/api/checkout/route.ts
- *
- * POST /api/checkout
- * Body: { cart, email, customerName, phone, address, city, state }
- * Returns: { url } — redirect user to this Paystack authorization URL
- */
 import { NextRequest, NextResponse } from "next/server"
 import { initializePaystackTransaction, generateReference } from "@/lib/paystack"
-import { createOrder } from "@/lib/orders"
+import { createOrder } from "@/lib/orders-admin"
+import { supabase } from "@/lib/supabase"
 import type { CartItem } from "@/types/Product"
 
 export async function POST(req: NextRequest) {
@@ -30,31 +24,31 @@ export async function POST(req: NextRequest) {
     if (!address || !city || !state)
                            return NextResponse.json({ error: "Full address required" }, { status: 400 })
 
-    // ── Calculate total ───────────────────────────────────────────────────
-    const amountNaira = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    // ── Resolve user_id from Bearer token, same as flw-checkout — still
+    // guest-checkout friendly, userId just stays null if no token is sent ──
+    const authHeader = req.headers.get("authorization")
+    let userId: string | null = null
+    if (authHeader?.startsWith("Bearer ")) {
+      const { data: { user } } = await supabase.auth.getUser(authHeader.slice(7))
+      userId = user?.id ?? null
+    }
 
     const reference = generateReference()
 
-    // ── Save pending order to Supabase first ──────────────────────────────
-    await createOrder({
+    // Creates the pending order — prices are re-verified against the
+    // products table inside createOrder(), not trusted from `cart` here.
+    // No deliveryFee passed, preserving this route's existing behavior
+    // (Paystack checkout doesn't add delivery — only flw-checkout does).
+    const { amount: amountNaira } = await createOrder({
       reference,
-      status: "pending",
       email,
-      customer_name: customerName,
+      customerName,
       phone,
       address,
       city,
       state,
-      items: cart.map((i) => ({
-        id: i.id,
-        name: i.name,
-        image_url: i.image_url,
-        price: i.price,
-        quantity: i.quantity,
-        selectedSize: i.selectedSize,
-        selectedColor: i.selectedColor,
-      })),
-      amount_naira: amountNaira,
+      cart,
+      userId,
     })
 
     // ── Initialize Paystack transaction ───────────────────────────────────
