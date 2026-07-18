@@ -83,7 +83,7 @@ export function QuickViewModal({ product, onClose, onAdd }: QuickViewModalProps)
                 {/* Badge */}
                 {product.badge && (
                   <span
-                    className={`self-start text-white text-xs font-black tracking-widest px-3 py-1 rounded-full mb-4 ${BADGE_COLORS[product.badge]}`}
+                    className={`self-start text-white text-xs font-black tracking-widest px-3 py-1 rounded-full mb-4 ${BADGE_COLORS[product.badge as keyof typeof BADGE_COLORS] ?? "bg-gray-500"}`}
                   >
                     {product.badge}
                   </span>

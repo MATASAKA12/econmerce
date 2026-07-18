@@ -48,7 +48,7 @@ export function ProductCard({
         {/* Badge top-left */}
         {product.badge && (
           <span
-            className={`absolute top-3 left-3 text-white text-[10px] font-black tracking-widest px-2 py-1 rounded-full ${BADGE_COLORS[product.badge]}`}
+            className={`absolute top-3 left-3 text-white text-[10px] font-black tracking-widest px-2 py-1 rounded-full ${BADGE_COLORS[product.badge as keyof typeof BADGE_COLORS] ?? "bg-gray-500"}`}
           >
             {product.badge}
           </span>

@@ -74,7 +74,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             </div>
             {product.badge && (
               <span
-                className={`absolute top-4 left-4 text-white text-xs font-black tracking-widest px-3 py-1.5 rounded-full ${BADGE_COLORS[product.badge]}`}
+                className={`absolute top-4 left-4 text-white text-xs font-black tracking-widest px-3 py-1.5 rounded-full ${BADGE_COLORS[product.badge as keyof typeof BADGE_COLORS] ?? "bg-gray-500"}`}
               >
                 {product.badge}
               </span>
