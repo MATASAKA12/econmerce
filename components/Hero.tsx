@@ -99,13 +99,36 @@ export function Hero({ onShopNow }: HeroProps) {
   const [canRenderRings, setCanRenderRings] = useState(false)
   useEffect(() => setCanRenderRings(true), [])
 
-  const SPHERE = 700
+  // Responsive sphere sizing — the old fixed 700px sphere/260px radius/80px
+  // image size only worked on desktop; on a ~375-430px phone it just got
+  // visually crushed and images overlapped, which is what showed up in
+  // testing. These scale down properly instead of staying one fixed size.
+  const [breakpoint, setBreakpoint] = useState<"mobile" | "tablet" | "desktop">("desktop")
+
+  useEffect(() => {
+    function updateBreakpoint() {
+      const w = window.innerWidth
+      if (w < 480)       setBreakpoint("mobile")
+      else if (w < 1024) setBreakpoint("tablet")
+      else                setBreakpoint("desktop")
+    }
+    updateBreakpoint()
+    window.addEventListener("resize", updateBreakpoint)
+    return () => window.removeEventListener("resize", updateBreakpoint)
+  }, [])
+
+  const SPHERE_SIZES = {
+    mobile:  { sphere: 280, radius: 95,  imageSize: 40, guideRing: 230, emblem: 130, perspective: 700 },
+    tablet:  { sphere: 480, radius: 170, imageSize: 60, guideRing: 400, emblem: 170, perspective: 1000 },
+    desktop: { sphere: 700, radius: 260, imageSize: 80, guideRing: 580, emblem: 220, perspective: 1200 },
+  }
+  const { sphere: SPHERE, radius, imageSize, guideRing, emblem, perspective } = SPHERE_SIZES[breakpoint]
 
   const rings: RingDef[] = [
     {
       images:     ORBIT_IMAGES,
-      radius:     260,
-      size:       80,
+      radius,
+      size:       imageSize,
       duration:   28,
       tiltX:      72,
       tiltZ:      0,
@@ -232,7 +255,7 @@ export function Hero({ onShopNow }: HeroProps) {
 
         <div
           className="relative w-full flex items-center justify-center"
-          style={{ height: `${SPHERE}px`, perspective: 1200 }}
+          style={{ height: `${SPHERE}px`, perspective }}
         >
           <div
             style={{
@@ -256,7 +279,7 @@ export function Hero({ onShopNow }: HeroProps) {
             >
               <div
                 className="rounded-full border border-orange-500/10"
-                style={{ width: "580px", height: "580px" }}
+                style={{ width: `${guideRing}px`, height: `${guideRing}px` }}
               />
             </div>
 
@@ -264,8 +287,8 @@ export function Hero({ onShopNow }: HeroProps) {
               <div
                 className="relative rounded-full overflow-hidden shadow-2xl"
                 style={{
-                  width: "220px",
-                  height: "220px",
+                  width: `${emblem}px`,
+                  height: `${emblem}px`,
                   animation:  "float 4s ease-in-out infinite",
                   background: "linear-gradient(135deg, #1a1a1a, #0a0a0a)",
                   border:     "3px solid rgba(212,160,23,0.4)",
