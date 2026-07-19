@@ -376,9 +376,11 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
 
       <Footer />
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — scrolls horizontally instead of squashing if
+          content is too wide to fit (e.g. more items added later, or a
+          very narrow screen). Scrollbar hidden for a native app feel. */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0d0d0d]/95 backdrop-blur-md border-t border-gray-200 dark:border-white/5 lg:hidden z-40">
-        <div className="grid grid-cols-4 h-16">
+        <div className="flex overflow-x-auto h-16 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {[
             { icon: "🛒", label: "Cart",    action: () => setCartOpen(true), badge: cartCount },
             { icon: "🔍", label: "Search",  action: () => {} },
@@ -388,7 +390,7 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
             <button
               key={label}
               onClick={action}
-              className="flex flex-col items-center justify-center gap-1 text-gray-500 dark:text-gray-600 hover:text-orange-500 dark:hover:text-orange-400 transition-colors relative"
+              className="flex-1 min-w-[80px] flex flex-col items-center justify-center gap-1 text-gray-500 dark:text-gray-600 hover:text-orange-500 dark:hover:text-orange-400 transition-colors relative"
             >
               <span className="text-lg">{icon}</span>
               <span className="text-[9px] font-medium">{label}</span>

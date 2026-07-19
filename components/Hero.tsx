@@ -156,7 +156,7 @@ export function Hero({ onShopNow }: HeroProps) {
 
           <motion.h1
             variants={container}
-            className="text-5xl lg:text-7xl font-black leading-none mb-6 tracking-tighter"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-none mb-6 tracking-tighter break-words"
           >
             {["WEAR THE", "HERITAGE.", "OWN THE", "CULTURE."].map((line) => (
               <motion.div
