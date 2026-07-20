@@ -118,9 +118,9 @@ export function Hero({ onShopNow }: HeroProps) {
   }, [])
 
   const SPHERE_SIZES = {
-    mobile:  { sphere: 280, radius: 95,  imageSize: 40, guideRing: 230, emblem: 130, perspective: 700 },
-    tablet:  { sphere: 480, radius: 170, imageSize: 60, guideRing: 400, emblem: 170, perspective: 1000 },
-    desktop: { sphere: 700, radius: 260, imageSize: 80, guideRing: 580, emblem: 220, perspective: 1200 },
+    mobile:  { sphere: 280, radius: 95,  imageSize: 90, guideRing: 230, emblem: 130, perspective: 700 },
+    tablet:  { sphere: 480, radius: 170, imageSize: 150, guideRing: 400, emblem: 170, perspective: 1000 },
+    desktop: { sphere: 700, radius: 260, imageSize: 200, guideRing: 580, emblem: 220, perspective: 1200 },
   }
   const { sphere: SPHERE, radius, imageSize, guideRing, emblem, perspective } = SPHERE_SIZES[breakpoint]
 
@@ -296,15 +296,13 @@ export function Hero({ onShopNow }: HeroProps) {
                 }}
               >
                 <img
-                  src="/fabric-collage.png"
+                  src="/bodega-fabrics-store.jpg"
                   alt="Fabric Collection"
                   className="w-full h-full object-cover"
                   onError={(e) => { e.currentTarget.style.display = "none" }}
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-orange-400 font-black text-sm text-center leading-tight px-4">
-                    BODEGA<br />FABRICS
-                  </p>
+                  
                 </div>
                 <div className="absolute inset-0 rounded-full border-2 border-orange-500/30 animate-pulse" />
               </div>

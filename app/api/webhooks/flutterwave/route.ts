@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { updateOrderStatus } from "@/lib/orders-admin"
+import { FLW_SECRET_KEY } from "@/lib/flutterwave"
 
 // Configure in Flutterwave dashboard: Settings → Webhooks →
 // https://yourdomain.com/api/webhooks/flutterwave, with a Secret Hash you
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
   // re-verify directly with Flutterwave's own API. ───────────────────────
   const verifyRes = await fetch(
     `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
-    { headers: { Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` } }
+    { headers: { Authorization: `Bearer ${FLW_SECRET_KEY}` } }
   )
 
   if (!verifyRes.ok) {

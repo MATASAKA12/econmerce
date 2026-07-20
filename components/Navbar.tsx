@@ -51,7 +51,7 @@ export function Navbar({
         {/* Logo */}
         <button
           onClick={() => handleNavClick("hero")}
-          className="text-xl font-black tracking-tighter hover:opacity-80 transition-opacity flex-shrink-0"
+          className="text-base sm:text-lg lg:text-xl font-black tracking-tighter hover:opacity-80 transition-opacity flex-shrink-0"
         >
           {/* Inline style forces the gold color regardless of theme */}
           <span className="text-black dark:text-white">BODEGA FABRICS</span>
@@ -117,7 +117,7 @@ export function Navbar({
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search products…"
-                className="bg-transparent text-sm text-black dark:text-white outline-none w-40 placeholder:text-gray-500"
+                className="bg-transparent text-sm text-black dark:text-white outline-none w-28 sm:w-40 placeholder:text-gray-500"
                 onBlur={() => { if (!searchQuery) setSearching(false) }}
               />
               <button onClick={() => { onSearchChange(""); setSearching(false) }}>
@@ -133,8 +133,8 @@ export function Navbar({
           {/* Theme toggle */}
           <ThemeToggle />
 
-          {/* Wishlist */}
-          <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+          {/* Wishlist — hidden below sm; least essential icon when space is tight */}
+          <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors hidden sm:block">
             <Heart size={20} />
             {wishlistCount > 0 && (
               <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-black">
@@ -143,20 +143,22 @@ export function Navbar({
             )}
           </button>
 
-          {/* Account */}
-          <a href="/account/signin" className="p-2 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+          {/* Account — hidden below sm, same reasoning */}
+          <a href="/account/signin" className="p-2 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors hidden sm:block">
             <User size={20} />
           </a>
 
-          {/* Cart — brand orange/gold stays constant across both themes */}
+          {/* Cart — brand orange/gold stays constant across both themes.
+              Text label hides below sm, leaving just the icon + badge, so
+              this button can't push the row wider than the viewport. */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onCartOpen}
-            className="relative flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white px-4 py-2 rounded-full text-sm font-bold transition-colors ml-1"
+            className="relative flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white px-3 sm:px-4 py-2 rounded-full text-sm font-bold transition-colors ml-1"
           >
             <ShoppingCartIcon size={16} />
-            Cart
+            <span className="hidden sm:inline">Cart</span>
             {cartCount > 0 && (
               <span className="bg-white text-orange-600 text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black">
                 {cartCount}
