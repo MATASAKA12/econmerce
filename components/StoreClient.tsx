@@ -17,7 +17,15 @@ import { fmt }            from "@/lib/Utils"
 import { useCart }        from "@/context/CartContext"
 import type { Product, SortOption, Category } from "@/types/Product"
 
-const CATEGORIES = ["All","Tops","Bottoms","Outerwear","Accessories","Footwear"] as const
+const CATEGORIES = [
+  "All",
+  "Wedding Materials",
+  "Party Materials",
+  "Aso-Ebi & Native",
+  "Lace Materials",
+  "Senator & Suiting",
+  "Accessories & Beads",
+] as const
 
 const easeOutExpo = [0.16, 1, 0.3, 1] as const
 
@@ -68,8 +76,10 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
     setTimeout(() => setToast(""), 2500)
   }
 
-  const handleAddToCart = (product: Product, size?: string, color?: string) => {
-    addToCart(product, size, color)
+  // Second param is now yards (decimal), not a clothing size — quick-add
+  // from a product card (no picker shown) defaults to 1 yard.
+  const handleAddToCart = (product: Product, yards: number = 1, color?: string) => {
+    addToCart(product, yards, color)
     showToast(`${product.name} added to bag`)
     setCartOpen(true)
   }
@@ -85,9 +95,14 @@ export function StoreClient({ initialProducts, initialHotProducts }: StoreClient
     })
 
   const handleNavigate = (section: string) => {
+    // Keys must match Navbar's dropdown items lowercased (cat.toLowerCase())
     const map: Record<string, string> = {
-      tops: "Tops", bottoms: "Bottoms", outerwear: "Outerwear",
-      footwear: "Footwear", accessories: "Accessories",
+      "wedding materials":    "Wedding Materials",
+      "party materials":      "Party Materials",
+      "aso-ebi & native":     "Aso-Ebi & Native",
+      "lace materials":       "Lace Materials",
+      "senator & suiting":    "Senator & Suiting",
+      "accessories & beads":  "Accessories & Beads",
       sale: "All", "new-arrivals": "All",
     }
     if (map[section]) setActiveCategory(map[section] as Category)

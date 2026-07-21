@@ -13,8 +13,7 @@ export interface OrderItem {
   name:          string
   image_url:     string
   price:         number
-  quantity:      number
-  selectedSize:  string
+  quantity:      number   // yards, not item count
   selectedColor: string
 }
 

@@ -10,7 +10,14 @@ import { revalidateProducts } from "@/app/actions/revalidate"
 import { fmt } from "@/lib/Utils"
 import type { Product } from "@/types/Product"
 
-const CATEGORIES = ["Tops","Bottoms","Outerwear","Accessories","Footwear"] as const
+const CATEGORIES = [
+  "Wedding Materials",
+  "Party Materials",
+  "Aso-Ebi & Native",
+  "Lace Materials",
+  "Senator & Suiting",
+  "Accessories & Beads",
+] as const
 const BADGES     = ["", "NEW", "HOT", "SALE", "LIMITED"] as const
 
 interface EditRow {

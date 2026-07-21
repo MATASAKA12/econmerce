@@ -10,11 +10,15 @@ const CART_STORAGE_KEY = "bodega_cart"
 
 interface CartContextType {
   cart:       CartItem[]
-  cartCount:  number
+  cartCount:  number   // total yards across the whole cart
   cartTotal:  number
-  addToCart:  (product: Product, size?: string, color?: string) => void
-  removeFromCart: (id: string, size: string, color: string) => void
-  updateQty:  (id: string, size: string, color: string, delta: number) => void
+  // `quantity` on a cart item now means yards (decimal), not item count —
+  // this reuses the existing quantity × price math throughout the app
+  // (price is now understood as price-per-yard) without needing to touch
+  // every downstream calculation.
+  addToCart:  (product: Product, yards?: number, color?: string) => void
+  removeFromCart: (id: string, color: string) => void
+  updateQty:  (id: string, color: string, delta: number) => void
   clearCart:  () => void
 }
 
@@ -52,35 +56,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cart, hydrated])
 
-  const addToCart = useCallback((product: Product, size?: string, color?: string) => {
-    const s = size  || product.sizes[0]  || ""
+  const addToCart = useCallback((product: Product, yards: number = 1, color?: string) => {
     const c = color || product.colors[0] || ""
+    const y = Math.max(0.5, yards)   // half-yard minimum step
     setCart((prev) => {
-      const existing = prev.find(
-        (i) => i.id === product.id && i.selectedSize === s && i.selectedColor === c
-      )
+      // Variants are now distinguished by color only — fabric doesn't
+      // have sizes, so two entries for the same product+color just merge
+      // their yardage together instead of creating a duplicate row.
+      const existing = prev.find((i) => i.id === product.id && i.selectedColor === c)
       if (existing) {
         return prev.map((i) =>
-          i.id === product.id && i.selectedSize === s && i.selectedColor === c
-            ? { ...i, quantity: i.quantity + 1 }
+          i.id === product.id && i.selectedColor === c
+            ? { ...i, quantity: i.quantity + y }
             : i
         )
       }
-      return [...prev, { ...product, quantity: 1, selectedSize: s, selectedColor: c }]
+      return [...prev, { ...product, quantity: y, selectedColor: c }]
     })
   }, [])
 
-  const removeFromCart = useCallback((id: string, size: string, color: string) => {
+  const removeFromCart = useCallback((id: string, color: string) => {
     setCart((prev) =>
-      prev.filter((i) => !(i.id === id && i.selectedSize === size && i.selectedColor === color))
+      prev.filter((i) => !(i.id === id && i.selectedColor === color))
     )
   }, [])
 
-  const updateQty = useCallback((id: string, size: string, color: string, delta: number) => {
+  const updateQty = useCallback((id: string, color: string, delta: number) => {
     setCart((prev) =>
       prev.map((i) =>
-        i.id === id && i.selectedSize === size && i.selectedColor === color
-          ? { ...i, quantity: Math.max(1, i.quantity + delta) }
+        i.id === id && i.selectedColor === color
+          ? { ...i, quantity: Math.max(0.5, Math.round((i.quantity + delta) * 10) / 10) }
           : i
       )
     )

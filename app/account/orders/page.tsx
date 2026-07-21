@@ -278,7 +278,7 @@ function OrderCard({
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm leading-tight truncate">{item.name}</p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Size: {item.selectedSize} · Color: {item.selectedColor} · Qty: {item.quantity}
+                    {item.quantity} yd · Color: {item.selectedColor}
                   </p>
                 </div>
                 <p className="text-orange-500 dark:text-orange-400 font-bold text-sm flex-shrink-0">

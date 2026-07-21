@@ -28,12 +28,12 @@ interface ProductDetailClientProps {
 
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const { addToCart } = useCart()
-  const [selectedSize,  setSelectedSize]  = useState("")
+  const [yards,         setYards]         = useState(1)
   const [selectedColor, setSelectedColor] = useState("")
   const [added, setAdded] = useState(false)
 
   const handleAdd = () => {
-    addToCart(product, selectedSize, selectedColor)
+    addToCart(product, yards, selectedColor)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }

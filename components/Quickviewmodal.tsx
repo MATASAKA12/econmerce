@@ -11,7 +11,7 @@ import type { Product } from "@/types/Product"
 interface QuickViewModalProps {
   product: Product | null
   onClose: () => void
-  onAdd: (p: Product, size: string, color: string) => void
+  onAdd: (p: Product, yards: number, color: string) => void
 }
 
 const easeOutExpo = [0.16, 1, 0.3, 1] as const
@@ -22,14 +22,14 @@ const easeOutExpo = [0.16, 1, 0.3, 1] as const
 // return null` pattern is moved inside the AnimatePresence child so the
 // exit animation gets a chance to play before the modal actually unmounts.
 export function QuickViewModal({ product, onClose, onAdd }: QuickViewModalProps) {
-  const [selectedSize, setSelectedSize] = useState("")
+  const [yards, setYards] = useState(1)
   const [selectedColor, setSelectedColor] = useState("")
 
   const handleAdd = () => {
     if (!product) return
-    onAdd(product, selectedSize, selectedColor)
+    onAdd(product, yards, selectedColor)
     onClose()
-    setSelectedSize("")
+    setYards(1)
     setSelectedColor("")
   }
 
@@ -141,25 +141,39 @@ export function QuickViewModal({ product, onClose, onAdd }: QuickViewModalProps)
                   </div>
                 </div>
 
-                {/* Size picker */}
+                {/* Yardage input — fabric is sold by the yard, not sized */}
                 <div className="mb-6">
-                  <p className="text-xs text-gray-500 mb-2 font-medium tracking-widest">SIZE</p>
-                  <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((s) => (
+                  <p className="text-xs text-gray-500 mb-2 font-medium tracking-widest">YARDS NEEDED</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-[#1a1a1a] border border-white/10 rounded-lg px-1">
                       <motion.button
-                        key={s}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedSize(s)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
-                          selectedSize === s
-                            ? "bg-orange-500 border-orange-500 text-white"
-                            : "border-white/10 text-gray-400 hover:border-white/30"
-                        }`}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setYards((y) => Math.max(0.5, Math.round((y - 0.5) * 10) / 10))}
+                        className="w-8 h-9 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                        aria-label="Decrease yardage"
                       >
-                        {s}
+                        −
                       </motion.button>
-                    ))}
+                      <input
+                        type="number"
+                        min={0.5}
+                        step={0.5}
+                        value={yards}
+                        onChange={(e) => setYards(Math.max(0.5, Number(e.target.value) || 0.5))}
+                        className="w-14 bg-transparent text-center text-white text-sm font-bold outline-none"
+                      />
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setYards((y) => Math.round((y + 0.5) * 10) / 10)}
+                        className="w-8 h-9 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                        aria-label="Increase yardage"
+                      >
+                        +
+                      </motion.button>
+                    </div>
+                    <span className="text-gray-500 text-xs">
+                      {yards} yd × {fmt(product.price)} = <span className="text-orange-400 font-bold">{fmt(product.price * yards)}</span>
+                    </span>
                   </div>
                 </div>
 

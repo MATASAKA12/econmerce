@@ -18,7 +18,6 @@ interface OrderItemInput {
   image_url:     string
   price:         number
   quantity:      number
-  selectedSize:  string
   selectedColor: string
 }
 
@@ -80,7 +79,6 @@ export async function createOrder({
       image_url:     product.image_url,
       price,
       quantity:      cartItem.quantity,
-      selectedSize:  cartItem.selectedSize,
       selectedColor: cartItem.selectedColor,
     }
   })

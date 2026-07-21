@@ -3,15 +3,17 @@
 import { useState } from "react"
 import { uploadProductImage } from "@/lib/storage"
 import { createProduct } from "@/lib/products"
-import { ImagePlus, Loader2, Check, ChevronDown } from "lucide-react"
+import { ImagePlus, Loader2, Check } from "lucide-react"
 
-const CATEGORIES = ["Tops","Bottoms","Outerwear","Accessories","Footwear"] as const
-const BADGES     = ["", "NEW", "HOT", "SALE", "LIMITED"] as const
-const SIZE_PRESETS: Record<string, string> = {
-  "Clothing": "XS, S, M, L, XL, XXL",
-  "Footwear": "38, 39, 40, 41, 42, 43, 44, 45",
-  "One Size": "One Size",
-}
+const CATEGORIES = [
+  "Wedding Materials",
+  "Party Materials",
+  "Aso-Ebi & Native",
+  "Lace Materials",
+  "Senator & Suiting",
+  "Accessories & Beads",
+] as const
+const BADGES = ["", "NEW", "HOT", "SALE", "LIMITED"] as const
 
 export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
   const [name,        setName]        = useState("")
@@ -20,7 +22,6 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
   const [category,    setCategory]    = useState("")
   const [oldPrice,    setOldPrice]    = useState("")
   const [stock,       setStock]       = useState("")
-  const [sizes,       setSizes]       = useState("")
   const [colors,      setColors]      = useState("")
   const [badge,       setBadge]       = useState("")
   const [featured,    setFeatured]    = useState(false)
@@ -43,9 +44,9 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
 
     if (!image)          { setError("Select a product image."); return }
     if (!name.trim())    { setError("Product name is required."); return }
-    if (!price || isNaN(Number(price))) { setError("Enter a valid price."); return }
+    if (!price || isNaN(Number(price))) { setError("Enter a valid price per yard."); return }
     if (!category)       { setError("Select a category."); return }
-    if (!stock || isNaN(Number(stock))) { setError("Enter stock quantity."); return }
+    if (!stock || isNaN(Number(stock))) { setError("Enter stock in yards."); return }
 
     setLoading(true)
     try {
@@ -56,12 +57,11 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
         slug:        name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
         description: description.trim(),
         category,
-        price:       Number(price),
+        price:       Number(price),       // per yard
         old_price:   oldPrice ? Number(oldPrice) : null,
-        stock:       Number(stock),
+        stock:       Number(stock),       // yards in stock
         image_url:   imageUrl,
         images:      [imageUrl],
-        sizes:       sizes.split(",").map((s) => s.trim()).filter(Boolean),
         colors:      colors.split(",").map((c) => c.trim()).filter(Boolean),
         rating:      5,
         reviews:     0,
@@ -72,7 +72,7 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
 
       // Reset
       setName(""); setPrice(""); setDescription(""); setCategory("")
-      setOldPrice(""); setStock(""); setSizes(""); setColors("")
+      setOldPrice(""); setStock(""); setColors("")
       setBadge(""); setFeatured(false); setImage(null); setPreview(null)
       setSuccess(true)
       onCreated?.()
@@ -87,7 +87,7 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-[#111] border border-white/5 rounded-2xl p-6 space-y-4">
-      <h2 className="text-base font-black text-white">Add New Product</h2>
+      <h2 className="text-base font-black text-white">Add New Fabric</h2>
 
       {error   && <p className="bg-red-500/10 text-red-400 text-xs px-4 py-2.5 rounded-xl border border-red-500/20">{error}</p>}
       {success && <p className="bg-green-500/10 text-green-400 text-xs px-4 py-2.5 rounded-xl border border-green-500/20 flex items-center gap-2"><Check size={12} /> Product uploaded successfully!</p>}
@@ -122,14 +122,14 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
         className={`${inputCls} resize-none`}
       />
 
-      {/* Price row */}
+      {/* Price row — clarified as per-yard */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Price (₦) *</label>
+          <label className="text-xs text-gray-500 mb-1 block">Price per Yard (₦) *</label>
           <input type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 25000" required className={inputCls} />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Old Price (₦)</label>
+          <label className="text-xs text-gray-500 mb-1 block">Old Price per Yard (₦)</label>
           <input type="number" min="0" value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} placeholder="e.g. 35000" className={inputCls} />
         </div>
       </div>
@@ -138,31 +138,15 @@ export default function ProductForm({ onCreated }: { onCreated?: () => void }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs text-gray-500 mb-1 block">Category *</label>
-          <select value={category} onChange={(e) => { setCategory(e.target.value); setSizes(SIZE_PRESETS["Clothing"]) }} required className={inputCls}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} required className={inputCls}>
             <option value="">Select…</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Stock Qty *</label>
-          <input type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="e.g. 50" required className={inputCls} />
+          <label className="text-xs text-gray-500 mb-1 block">Stock (yards) *</label>
+          <input type="number" min="0" step="0.5" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="e.g. 50" required className={inputCls} />
         </div>
-      </div>
-
-      {/* Sizes */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-xs text-gray-500">Sizes (comma separated)</label>
-          <div className="flex gap-1">
-            {Object.entries(SIZE_PRESETS).map(([label, val]) => (
-              <button key={label} type="button" onClick={() => setSizes(val)}
-                className="text-[10px] text-orange-400 hover:text-orange-300 border border-orange-500/20 px-2 py-0.5 rounded-full transition-colors">
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <input value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder='e.g. "XS, S, M, L, XL"' className={inputCls} />
       </div>
 
       {/* Colors */}

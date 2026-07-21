@@ -19,8 +19,8 @@ interface NavbarProps {
 
 const NAV_LINKS = [
   { label: "Home",         href: "/",              icon: Home,     key: "hero" },
-  { label: "Products",     href: "#products",       icon: Tag,      key: "products",    dropdown: ["Tops","Bottoms","Outerwear","Accessories","Footwear"] },
-  { label: "Categories",   href: "#categories",     icon: Tag,      key: "categories",  dropdown: ["Tops","Bottoms","Outerwear","Accessories","Footwear"] },
+  { label: "Products",     href: "#products",       icon: Tag,      key: "products",    dropdown: ["Wedding Materials","Party Materials","Aso-Ebi & Native","Lace Materials","Senator & Suiting","Accessories & Beads"] },
+  { label: "Categories",   href: "#categories",     icon: Tag,      key: "categories",  dropdown: ["Wedding Materials","Party Materials","Aso-Ebi & Native","Lace Materials","Senator & Suiting","Accessories & Beads"] },
   { label: "New Arrivals", href: "#new-arrivals",   icon: Sparkles, key: "new-arrivals" },
   { label: "Sale",         href: "#sale",           icon: Percent,  key: "sale" },
 ]

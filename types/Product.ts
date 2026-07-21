@@ -6,15 +6,16 @@ export interface Product {
 
   category: string
 
+  /** Price PER YARD, in Naira */
   price: number
   old_price?: number | null
 
+  /** Total yards currently in stock */
   stock: number
 
   image_url: string
   images: string[]
 
-  sizes: string[]
   colors: string[]
 
   rating: number
@@ -33,9 +34,11 @@ export interface Product {
 }
 
 export interface CartItem extends Product {
+  /** Yards selected. Reuses the "quantity" name so all existing
+   * price × quantity math throughout the app works unchanged — it's just
+   * decimal yards now instead of an integer item count. */
   quantity: number
   selectedColor: string
-  selectedSize: string
 }
 
 export type SortOption =
@@ -47,8 +50,9 @@ export type SortOption =
 
 export type Category =
   | "All"
-  | "Tops"
-  | "Bottoms"
-  | "Outerwear"
-  | "Accessories"
-  | "Footwear"
+  | "Wedding Materials"
+  | "Party Materials"
+  | "Aso-Ebi & Native"
+  | "Lace Materials"
+  | "Senator & Suiting"
+  | "Accessories & Beads"
