@@ -126,12 +126,16 @@ export default function FlwCheckoutForm({
       <div className="bg-[#1a1a1a] rounded-xl p-4 border border-white/5 space-y-2">
         <p className="text-xs text-gray-500 font-bold tracking-widest mb-3">ORDER SUMMARY</p>
 
-        {/* Cart items */}
+        {/* Cart items — keyed by id+color now, since fabric has no sizes.
+            Quantity is yards, shown explicitly so it reads clearly here
+            rather than as an ambiguous "× 3". */}
         {cart.map((item) => (
-          <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`}
+          <div key={`${item.id}-${item.selectedColor}`}
             className="flex justify-between text-sm">
             <span className="text-gray-400 truncate mr-4">
-              {item.name} <span className="text-gray-600">× {item.quantity}</span>
+              {item.name} <span className="text-gray-600">
+                × {item.quantity % 1 === 0 ? item.quantity : item.quantity.toFixed(1)} yd
+              </span>
             </span>
             <span className="text-white font-medium flex-shrink-0">
               {fmt(item.price * item.quantity)}
