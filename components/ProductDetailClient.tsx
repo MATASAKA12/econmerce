@@ -138,27 +138,39 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               </div>
             )}
 
-            {/* Size picker */}
-            {product.sizes?.length > 0 && (
-              <div className="mb-8">
-                <p className="text-xs text-gray-500 mb-2 font-medium tracking-widest">SIZE</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSelectedSize(s)}
-                      className={`px-4 py-2 rounded-lg text-sm font-bold border transition-colors ${
-                        selectedSize === s
-                          ? "bg-orange-500 border-orange-500 text-white"
-                          : "border-white/10 text-gray-400 hover:border-white/30"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+            {/* Yardage input — fabric is sold by the yard, not sized */}
+            <div className="mb-8">
+              <p className="text-xs text-gray-500 mb-2 font-medium tracking-widest">YARDS NEEDED</p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 bg-[#1a1a1a] border border-white/10 rounded-xl px-1">
+                  <button
+                    onClick={() => setYards((y) => Math.max(0.5, Math.round((y - 0.5) * 10) / 10))}
+                    className="w-10 h-11 flex items-center justify-center text-gray-400 hover:text-white transition-colors text-lg"
+                    aria-label="Decrease yardage"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    min={0.5}
+                    step={0.5}
+                    value={yards}
+                    onChange={(e) => setYards(Math.max(0.5, Number(e.target.value) || 0.5))}
+                    className="w-16 bg-transparent text-center text-white font-bold outline-none"
+                  />
+                  <button
+                    onClick={() => setYards((y) => Math.round((y + 0.5) * 10) / 10)}
+                    className="w-10 h-11 flex items-center justify-center text-gray-400 hover:text-white transition-colors text-lg"
+                    aria-label="Increase yardage"
+                  >
+                    +
+                  </button>
                 </div>
+                <span className="text-gray-500 text-sm">
+                  {yards} yd × {fmt(product.price)}/yd = <span className="text-orange-400 font-bold">{fmt(product.price * yards)}</span>
+                </span>
               </div>
-            )}
+            </div>
 
             {/* Actions */}
             <div className="flex gap-3 mt-auto">
